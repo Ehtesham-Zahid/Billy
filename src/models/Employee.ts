@@ -1,0 +1,34 @@
+import mongoose, { Schema, Document } from "mongoose";
+
+export interface IEmployee extends Document {
+  companyId: mongoose.Types.ObjectId;
+  clerkUserId?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "admin" | "staff";
+  position?: string;
+  salary: number;
+  bankAccount?: string;
+  status: "active" | "inactive";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const EmployeeSchema: Schema = new Schema(
+  {
+    companyId: { type: Schema.Types.ObjectId, ref: "Company", required: true, index: true },
+    clerkUserId: { type: String, index: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true },
+    role: { type: String, enum: ["admin", "staff"], default: "staff", required: true },
+    position: { type: String },
+    salary: { type: Number, required: true, min: 0 },
+    bankAccount: { type: String },
+    status: { type: String, enum: ["active", "inactive"], default: "active", required: true },
+  },
+  { timestamps: true }
+);
+
+export const Employee = mongoose.models.Employee || mongoose.model<IEmployee>("Employee", EmployeeSchema);
