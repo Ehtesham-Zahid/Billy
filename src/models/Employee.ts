@@ -2,11 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IEmployee extends Document {
   companyId: mongoose.Types.ObjectId;
-  clerkUserId?: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "admin" | "staff";
   position?: string;
   salary: number;
   bankAccount?: string;
@@ -18,11 +16,9 @@ export interface IEmployee extends Document {
 const EmployeeSchema: Schema = new Schema(
   {
     companyId: { type: Schema.Types.ObjectId, ref: "Company", required: true, index: true },
-    clerkUserId: { type: String, index: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true },
-    role: { type: String, enum: ["admin", "staff"], default: "staff", required: true },
     position: { type: String },
     salary: { type: Number, required: true, min: 0 },
     bankAccount: { type: String },

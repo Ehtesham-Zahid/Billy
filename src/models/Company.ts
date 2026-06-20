@@ -8,6 +8,7 @@ export interface ICompany extends Document {
   address?: string;
   logoUrl?: string;
   taxId?: string;
+  accountType: "company" | "platform_admin";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,12 @@ const CompanySchema: Schema = new Schema(
     address: { type: String },
     logoUrl: { type: String },
     taxId: { type: String },
+    accountType: {
+      type: String,
+      enum: ["company", "platform_admin"],
+      default: "company",
+      required: true,
+    },
   },
   { timestamps: true }
 );
