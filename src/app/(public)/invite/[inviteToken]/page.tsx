@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/db";
 import { Employee } from "@/models/Employee";
 import { Company } from "@/models/Company";
-import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { SignUp, SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -170,18 +170,10 @@ export default async function InvitePage({ params }: PageProps) {
       );
     }
 
-    // Set role in Clerk's publicMetadata
-    try {
-      const client = await clerkClient();
-      await client.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          role: "employee",
-        },
-      });
-    } catch (error) {
-      console.error("Failed to update Clerk user metadata to employee:", error);
-    }
-
+    // Linking complete. Redirect to /my immediately.
+    // Clerk role metadata is synced separately via /api/sync-role
+    // called from the employee portal, to avoid triggering
+    // invalidateCacheAction() in a Server Component context.
     redirect("/my");
   }
 

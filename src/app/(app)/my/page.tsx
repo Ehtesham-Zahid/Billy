@@ -6,6 +6,7 @@ import { Payroll } from "@/models/Payroll";
 import { Company } from "@/models/Company";
 import { Briefcase, Mail, Landmark, DollarSign, Calendar, FileText, ArrowDownToLine } from "lucide-react";
 import Link from "next/link";
+import RoleSyncer from "./RoleSyncer";
 
 export default async function EmployeePortalPage() {
   const { userId } = await auth();
@@ -63,6 +64,8 @@ export default async function EmployeePortalPage() {
 
   return (
     <div className="space-y-8">
+      {/* Silently sync Clerk employee role metadata via API route on mount */}
+      <RoleSyncer />
       {/* Premium Profile Header Card */}
       <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-primary/10 via-background to-card p-8 shadow-sm">
         <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl -mr-16 -mt-16" />
