@@ -173,7 +173,7 @@ export default function SettingsPage() {
               />
 
               <div className="space-y-2">
-                <FormLabel className="text-xs font-semibold text-muted-foreground">Contact Email</FormLabel>
+                <label className="text-xs font-semibold text-muted-foreground">Contact Email</label>
                 <div className="relative">
                   <Input
                     type="email"
