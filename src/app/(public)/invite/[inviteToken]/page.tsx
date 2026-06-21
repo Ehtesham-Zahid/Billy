@@ -43,6 +43,9 @@ export default async function InvitePage({ params }: PageProps) {
     );
   }
 
+  const company = await Company.findById(employee.companyId);
+  const companyName = company ? company.name : "their company";
+
   // 2. If the user is logged in, perform security checks before linking
   if (userId) {
     // Check Case A: Already linked to THIS employee (re-clicking their own link)
@@ -156,7 +159,7 @@ export default async function InvitePage({ params }: PageProps) {
       <div className="text-center space-y-2 max-w-sm">
         <h1 className="text-3xl font-extrabold tracking-tight text-primary">Join Billy</h1>
         <p className="text-muted-foreground text-sm">
-          Create your account to accept your employee invitation from <span className="font-semibold text-foreground">{employee.firstName} {employee.lastName}</span>.
+          Create your account to accept your employee invitation from <span className="font-semibold text-foreground">{companyName}</span>.
         </p>
       </div>
       <div className="shadow-2xl rounded-2xl overflow-hidden border border-border">
