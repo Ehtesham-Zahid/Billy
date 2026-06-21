@@ -54,6 +54,7 @@ interface ClientData {
   address?: string;
   taxId?: string;
   createdAt: string;
+  totalInvoiced?: number;
 }
 
 // Zod validation schema
@@ -278,8 +279,8 @@ export default function ClientsPage() {
                     <TableCell className="font-medium text-foreground">{client.name}</TableCell>
                     <TableCell className="text-muted-foreground">{client.email}</TableCell>
                     <TableCell className="text-muted-foreground">{client.phone || "—"}</TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                      —
+                    <TableCell className="text-right font-mono font-semibold text-foreground tabular-nums">
+                      ${(client.totalInvoiced ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -364,7 +365,9 @@ export default function ClientsPage() {
                   </div>
                   <div className="text-right">
                     <span className="text-muted-foreground block">Total Invoiced</span>
-                    <span className="font-medium text-foreground block mt-0.5 font-mono">—</span>
+                    <span className="font-semibold text-foreground block mt-0.5 font-mono">
+                      ${(client.totalInvoiced ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
               </div>

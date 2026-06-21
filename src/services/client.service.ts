@@ -1,9 +1,27 @@
 import { connectDB } from "@/lib/db";
 import { Client, IClient } from "@/models/Client";
+import { Invoice } from "@/models/Invoice";
 
-export async function getClients(companyId: string): Promise<IClient[]> {
+export async function getClients(companyId: string): Promise<any[]> {
   await connectDB();
-  return Client.find({ companyId }).sort({ createdAt: -1 });
+  const clients = await Client.find({ companyId }).sort({ createdAt: -1 });
+
+  const clientsWithInvoiced = await Promise.all(
+    clients.map(async (client) => {
+      const invoices = await Invoice.find({
+        companyId,
+        clientId: client._id,
+        status: { $ne: "draft" },
+      });
+      const totalInvoiced = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      return {
+        ...client.toObject(),
+        totalInvoiced,
+      };
+    })
+  );
+
+  return clientsWithInvoiced;
 }
 
 export async function createClient(companyId: string, data: Partial<IClient>): Promise<IClient> {
