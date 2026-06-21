@@ -8,7 +8,7 @@ interface InvoicePDFProps {
 
 export const InvoicePDFTemplate: React.FC<InvoicePDFProps> = ({ invoice }) => {
   const template = invoice.templateId || {};
-  const primaryColor = template.primaryColor || "#4F46E5";
+  const primaryColor = template.primaryColor || "#7C3AED";
   const layoutType = template.layoutType || "default";
   const displayStatus = getComputedInvoiceStatus(invoice.status, invoice.dueDate);
   const company = invoice.companyId || {};

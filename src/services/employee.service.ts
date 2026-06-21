@@ -60,15 +60,15 @@ export async function createEmployee(
         subject: `Invitation to join ${companyName} on Billy`,
         html: `
           <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e7; border-radius: 12px;">
-            <h2 style="color: #4f46e5; margin-bottom: 16px;">Welcome to Billy</h2>
+            <h2 style="color: #7c3aed; margin-bottom: 16px;">Welcome to Billy</h2>
             <p>You have been added as an employee at <strong>${companyName}</strong> on Billy.</p>
             <p>Click the button below to set up your account and view your salary details:</p>
             <div style="margin: 24px 0;">
-              <a href="${inviteUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Set Up Account</a>
+              <a href="${inviteUrl}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Set Up Account</a>
             </div>
             <p style="font-size: 12px; color: #71717a; margin-top: 24px;">
               If the button doesn't work, copy and paste this link in your browser:<br/>
-              <a href="${inviteUrl}" style="color: #4f46e5;">${inviteUrl}</a>
+              <a href="${inviteUrl}" style="color: #7c3aed;">${inviteUrl}</a>
             </p>
           </div>
         `,

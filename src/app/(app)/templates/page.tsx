@@ -17,7 +17,7 @@ interface InvoiceTemplate {
 }
 
 const PRESET_COLORS = [
-  "#4F46E5", // Indigo
+  "#7C3AED", // Violet
   "#0D9488", // Teal
   "#2563EB", // Blue
   "#DB2777", // Pink
@@ -32,7 +32,7 @@ export default function TemplatesPage() {
 
   // Editor states
   const [name, setName] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#4F46E5");
+  const [primaryColor, setPrimaryColor] = useState("#7C3AED");
   const [layoutType, setLayoutType] = useState<"default" | "modern" | "minimal">("default");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -112,7 +112,7 @@ export default function TemplatesPage() {
       queryClient.invalidateQueries({ queryKey: ["templates"] });
       setSelectedTemplate(null);
       setName("");
-      setPrimaryColor("#4F46E5");
+      setPrimaryColor("#7C3AED");
       setLayoutType("default");
       setIsEditing(false);
       showToast("Invoice template deleted successfully.");
@@ -147,7 +147,7 @@ export default function TemplatesPage() {
   const handleCreateNewClick = () => {
     setSelectedTemplate(null);
     setName("My Custom Design");
-    setPrimaryColor("#4F46E5");
+    setPrimaryColor("#7C3AED");
     setLayoutType("default");
     setIsEditing(true);
   };

@@ -5,8 +5,8 @@ import { Invoice } from "@/models/Invoice";
 async function seedDefaultTemplates() {
   const defaults = [
     {
-      name: "Classic Indigo",
-      primaryColor: "#4F46E5",
+      name: "Classic Violet",
+      primaryColor: "#7C3AED",
       layoutType: "default",
     },
     {

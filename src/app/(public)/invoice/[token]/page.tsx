@@ -45,7 +45,7 @@ export default async function PublicInvoicePage({ params }: PageProps) {
     }
   };
 
-  const primaryColor = invoice.templateId?.primaryColor || "#4F46E5";
+  const primaryColor = invoice.templateId?.primaryColor || "#7C3AED";
 
   return (
     <div 

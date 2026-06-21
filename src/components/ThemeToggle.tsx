@@ -24,7 +24,7 @@ export default function ThemeToggle() {
             theme === "light" ? "scale-100 rotate-0 opacity-100" : "scale-0 rotate-90 opacity-0"
           }`}
         >
-          <Moon className="h-4.5 w-4.5 text-indigo-500" />
+          <Moon className="h-4.5 w-4.5 text-violet-500" />
         </span>
         
         {/* Sun Icon */}

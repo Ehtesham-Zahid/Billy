@@ -235,7 +235,7 @@ export default function PayrollPage() {
         </div>
 
         <div className="border border-border rounded-lg bg-card p-5 flex items-center space-x-4 shadow-sm">
-          <div className="h-10 w-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full bg-violet-500/10 text-violet-500 flex items-center justify-center">
             <Users className="h-5 w-5" />
           </div>
           <div>

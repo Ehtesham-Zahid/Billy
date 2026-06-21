@@ -324,7 +324,7 @@ export async function updateInvoice(
           subject: `New Invoice ${updatedInvoice.invoiceNumber} from ${companyName}`,
           html: `
             <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e7; border-radius: 12px;">
-              <h2 style="color: #4f46e5; margin-bottom: 16px;">New Invoice from ${companyName}</h2>
+              <h2 style="color: #7c3aed; margin-bottom: 16px;">New Invoice from ${companyName}</h2>
               <p>Hello <strong>${updatedInvoice.clientSnapshot.name}</strong>,</p>
               <p><strong>${companyName}</strong> has sent you a new invoice <strong>${updatedInvoice.invoiceNumber}</strong>.</p>
               <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
@@ -334,7 +334,7 @@ export async function updateInvoice(
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #71717a;">Amount Due:</td>
-                  <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #4f46e5;">$${updatedInvoice.total.toFixed(2)}</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #7c3aed;">$${updatedInvoice.total.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #71717a;">Due Date:</td>
@@ -343,11 +343,11 @@ export async function updateInvoice(
               </table>
               <p>Click the button below to view the invoice, download the PDF, or make a payment:</p>
               <div style="margin: 24px 0; text-align: center;">
-                <a href="${invoiceUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">View Invoice</a>
+                <a href="${invoiceUrl}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">View Invoice</a>
               </div>
               <p style="font-size: 12px; color: #71717a; margin-top: 24px;">
                 If the button doesn't work, copy and paste this link in your browser:<br/>
-                <a href="${invoiceUrl}" style="color: #4f46e5;">${invoiceUrl}</a>
+                <a href="${invoiceUrl}" style="color: #7c3aed;">${invoiceUrl}</a>
               </p>
             </div>
           `,

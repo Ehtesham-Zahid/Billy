@@ -105,7 +105,7 @@ export default function AdminConsolePage() {
         </div>
 
         <div className="border border-border bg-card rounded-xl p-6 shadow-sm flex items-center gap-4">
-          <div className="h-12 w-12 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-inner">
+          <div className="h-12 w-12 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shadow-inner">
             <Users className="h-6 w-6" />
           </div>
           <div>

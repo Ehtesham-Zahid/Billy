@@ -170,8 +170,8 @@ function InvoiceFormContent() {
         );
         targetId = sortedCustom[0]._id;
       } else {
-        const classicIndigo = systemTemplates.find((t: any) => t.name === "Classic Indigo") || systemTemplates[0];
-        targetId = classicIndigo?._id || "";
+        const classicViolet = systemTemplates.find((t: any) => t.name === "Classic Violet") || systemTemplates[0];
+        targetId = classicViolet?._id || "";
       }
       
       if (targetId) {
