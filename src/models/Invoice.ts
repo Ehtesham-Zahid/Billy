@@ -7,6 +7,14 @@ export interface IInvoiceItem {
   amount: number;
 }
 
+export interface IClientSnapshot {
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
+}
+
 export interface IInvoice extends Document {
   companyId: mongoose.Types.ObjectId;
   clientId: mongoose.Types.ObjectId;
@@ -21,6 +29,7 @@ export interface IInvoice extends Document {
   status: "draft" | "sent" | "paid" | "overdue";
   templateId?: mongoose.Types.ObjectId;
   token: string;
+  clientSnapshot: IClientSnapshot;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -31,6 +40,14 @@ const InvoiceItemSchema = new Schema({
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true, min: 0 },
   amount: { type: Number, required: true, min: 0 },
+});
+
+const ClientSnapshotSchema = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String },
+  address: { type: String },
+  taxId: { type: String },
 });
 
 const InvoiceSchema: Schema = new Schema(
@@ -54,9 +71,13 @@ const InvoiceSchema: Schema = new Schema(
     },
     templateId: { type: Schema.Types.ObjectId, ref: "InvoiceTemplate" },
     token: { type: String, required: true, unique: true, index: true },
+    clientSnapshot: { type: ClientSnapshotSchema, required: true },
     notes: { type: String },
   },
   { timestamps: true }
 );
+
+// Ensure unique invoice numbers scoped strictly per company
+InvoiceSchema.index({ companyId: 1, invoiceNumber: 1 }, { unique: true });
 
 export const Invoice = mongoose.models.Invoice || mongoose.model<IInvoice>("Invoice", InvoiceSchema);
