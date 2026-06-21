@@ -268,13 +268,7 @@ export default function EmployeesPage() {
     }
   };
 
-  const getStatusBadgeClass = (status: string) => {
-    const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white";
-    if (status === "active") {
-      return `${base} bg-emerald-600`;
-    }
-    return `${base} bg-zinc-500`;
-  };
+
 
   return (
     <div className="space-y-6">
@@ -377,11 +371,19 @@ export default function EmployeesPage() {
                       ${emp.salary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className={getStatusBadgeClass(emp.status)}>{emp.status}</span>
+                      <span
+                        className={
+                          emp.clerkUserId
+                            ? "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white bg-emerald-600"
+                            : "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white bg-zinc-500"
+                        }
+                      >
+                        {emp.clerkUserId ? "Linked" : "Unlinked"}
+                      </span>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        {!emp.clerkUserId ? (
+                        {!emp.clerkUserId && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -397,10 +399,6 @@ export default function EmployeesPage() {
                             <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                             <span className="sr-only">Copy Invite Link</span>
                           </Button>
-                        ) : (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900">
-                            Linked
-                          </span>
                         )}
                         <Button
                           variant="ghost"
@@ -460,14 +458,22 @@ export default function EmployeesPage() {
                       <h3 className="font-bold text-foreground">
                         {emp.firstName} {emp.lastName}
                       </h3>
-                      <span className={getStatusBadgeClass(emp.status)}>{emp.status}</span>
+                      <span
+                        className={
+                          emp.clerkUserId
+                            ? "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white bg-emerald-600"
+                            : "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white bg-zinc-500"
+                        }
+                      >
+                        {emp.clerkUserId ? "Linked" : "Unlinked"}
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
                       <Mail className="h-3 w-3" /> {emp.email}
                     </p>
                   </div>
                   <div className="flex gap-2 items-center">
-                    {!emp.clerkUserId ? (
+                    {!emp.clerkUserId && (
                       <Button
                         variant="outline"
                         size="icon"
@@ -482,10 +488,6 @@ export default function EmployeesPage() {
                       >
                         <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                    ) : (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900">
-                        Linked
-                      </span>
                     )}
                     <Button
                       variant="outline"

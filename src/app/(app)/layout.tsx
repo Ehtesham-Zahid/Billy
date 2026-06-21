@@ -24,23 +24,18 @@ export default async function AppLayout({
 
   // 1. Custom Employee Portal Layout
   if (role === "employee" || employee) {
-    // If Clerk metadata role is not synced yet, sync it in the background
-    if (role !== "employee" && userId) {
-      try {
-        const client = await clerkClient();
-        await client.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            role: "employee",
-          },
-        });
-      } catch (err) {
-        console.error("Failed to sync Clerk publicMetadata for employee in layout:", err);
-      }
-    }
+    // Force employees to redirect to /my if trying to access company or admin dashboard routes
+    const isForbiddenPathForEmployee =
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/clients") ||
+      pathname.startsWith("/invoices") ||
+      pathname.startsWith("/employees") ||
+      pathname.startsWith("/payroll") ||
+      pathname.startsWith("/templates") ||
+      pathname.startsWith("/settings") ||
+      pathname.startsWith("/admin");
 
-    // Force employees to only access /my
-    const isEmployeePath = pathname === "/my" || pathname.startsWith("/my/");
-    if (!isEmployeePath) {
+    if (isForbiddenPathForEmployee) {
       redirect("/my");
     }
     return (
@@ -82,8 +77,17 @@ export default async function AppLayout({
 
   // 2. Custom Platform Admin Layout
   if (role === "platform_admin") {
-    const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-    if (!isAdminPath) {
+    const isForbiddenPathForAdmin =
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/clients") ||
+      pathname.startsWith("/invoices") ||
+      pathname.startsWith("/employees") ||
+      pathname.startsWith("/payroll") ||
+      pathname.startsWith("/templates") ||
+      pathname.startsWith("/settings") ||
+      pathname.startsWith("/my");
+
+    if (isForbiddenPathForAdmin) {
       redirect("/admin");
     }
     return (
