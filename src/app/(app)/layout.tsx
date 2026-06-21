@@ -2,18 +2,47 @@ import React from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { getCompanyForUser } from "@/lib/clerk";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { connectDB } from "@/lib/db";
+import { Employee } from "@/models/Employee";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.publicMetadata as any)?.role;
 
+  await connectDB();
+  const employee = userId ? await Employee.findOne({ clerkUserId: userId }) : null;
+
+  const headerList = await headers();
+  const pathname = headerList.get("x-pathname") || "";
+
   // 1. Custom Employee Portal Layout
-  if (role === "employee") {
+  if (role === "employee" || employee) {
+    // If Clerk metadata role is not synced yet, sync it in the background
+    if (role !== "employee" && userId) {
+      try {
+        const client = await clerkClient();
+        await client.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            role: "employee",
+          },
+        });
+      } catch (err) {
+        console.error("Failed to sync Clerk publicMetadata for employee in layout:", err);
+      }
+    }
+
+    // Force employees to only access /my
+    const isEmployeePath = pathname === "/my" || pathname.startsWith("/my/");
+    if (!isEmployeePath) {
+      redirect("/my");
+    }
     return (
       <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
         <aside className="w-64 border-r border-border bg-card flex flex-col">
@@ -53,6 +82,10 @@ export default async function AppLayout({
 
   // 2. Custom Platform Admin Layout
   if (role === "platform_admin") {
+    const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+    if (!isAdminPath) {
+      redirect("/admin");
+    }
     return (
       <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
         <aside className="w-64 border-r border-border bg-card flex flex-col">

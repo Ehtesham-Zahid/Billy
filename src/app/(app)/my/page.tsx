@@ -18,6 +18,12 @@ export default async function EmployeePortalPage() {
   // Find the employee profile linked to this Clerk account
   const employee = await Employee.findOne({ clerkUserId: userId });
   if (!employee) {
+    // If the logged-in user is actually a company admin, redirect them to /dashboard
+    const isCompany = await Company.findOne({ clerkId: userId });
+    if (isCompany) {
+      redirect("/dashboard");
+    }
+
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
         <div className="h-16 w-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">

@@ -108,7 +108,7 @@ export default async function InvitePage({ params }: PageProps) {
     const linkedEmployee = await Employee.findOneAndUpdate(
       { inviteToken, clerkUserId: { $exists: false } },
       { $set: { clerkUserId: userId }, $unset: { inviteToken: "" } },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!linkedEmployee) {

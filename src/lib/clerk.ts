@@ -37,7 +37,7 @@ export async function getCompanyForUser() {
   // Block employees from lazy-creating/accessing company accounts
   const employee = await Employee.findOne({ clerkUserId: userId });
   if (employee) {
-    throw new Error("Unauthorized: Employees cannot access company accounts");
+    throw new Error("Unauthorized");
   }
 
   // Try to find the company first. If it exists, return it immediately to avoid calling currentUser() API.
@@ -83,7 +83,7 @@ export async function getCompanyForUser() {
         accountType: "company",
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" } as any
   );
 
   // Set role in Clerk's publicMetadata for edge-compatible access

@@ -48,6 +48,8 @@ const isEmployeeRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
 
   if (isProtectedRoute(req)) {
     if (!userId) {
@@ -99,12 +101,14 @@ export default clerkMiddleware(async (auth, req) => {
       if (isAdminRoute(req)) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
-      // If they try to access /my, redirect to /dashboard (where company lazy creation happens)
-      if (isEmployeeRoute(req)) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
     }
   }
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 });
 
 export const config = {

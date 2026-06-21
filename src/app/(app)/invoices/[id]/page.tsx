@@ -198,9 +198,6 @@ export default function InvoiceDetailPage({ params }: PageProps) {
               </h1>
               <span className={getStatusBadgeClass(displayStatus)}>{displayStatus}</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">
-              Share Token: {invoice.token}
-            </p>
           </div>
         </div>
 
