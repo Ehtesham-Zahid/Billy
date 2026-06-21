@@ -5,6 +5,7 @@ import { getInvoiceByTokenForPdf } from "@/services/invoice.service";
 import { renderToStream } from "@react-pdf/renderer";
 import React from "react";
 import { InvoicePDFTemplate } from "@/features/invoices/templates/InvoicePDFTemplate";
+import { isInvoicePublicViewable } from "@/features/invoices/lib/invoiceUtils";
 
 interface RouteProps {
   params: Promise<{ token: string }>;
@@ -16,8 +17,8 @@ export async function GET(req: NextRequest, { params }: RouteProps) {
     
     const invoice = await getInvoiceByTokenForPdf(token);
 
-    // Block access if invoice does not exist or is still in Draft status
-    if (!invoice || invoice.status === "draft") {
+    // Block access if invoice does not exist or status does not allow public viewing
+    if (!invoice || !isInvoicePublicViewable(invoice.status)) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 

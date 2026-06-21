@@ -19,7 +19,7 @@ import {
   Copy,
 } from "lucide-react";
 
-import { getComputedInvoiceStatus, showToast } from "@/features/invoices/lib/invoiceUtils";
+import { getComputedInvoiceStatus, showToast, isInvoicePublicViewable } from "@/features/invoices/lib/invoiceUtils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -237,20 +237,22 @@ export default function InvoiceDetailPage({ params }: PageProps) {
           </Link>
 
           {/* Action: Copy Link */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9"
-            title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
-            onClick={() => {
-              const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
-              navigator.clipboard.writeText(shareUrl).then(() => {
-                showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
-              });
-            }}
-          >
-            <Copy className="mr-2 h-4 w-4 text-muted-foreground" /> Copy Link
-          </Button>
+          {isInvoicePublicViewable(invoice.status) && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              title="Copy shareable link"
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  showToast("Public invoice link copied!");
+                });
+              }}
+            >
+              <Copy className="mr-2 h-4 w-4 text-muted-foreground" /> Copy Link
+            </Button>
+          )}
 
           {/* Action: Mark Sent */}
           {invoice.status === "draft" && (

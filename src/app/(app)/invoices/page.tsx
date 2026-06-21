@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getComputedInvoiceStatus, showToast } from "@/features/invoices/lib/invoiceUtils";
+import { getComputedInvoiceStatus, showToast, isInvoicePublicViewable } from "@/features/invoices/lib/invoiceUtils";
 
 interface InvoiceData {
   _id: string;
@@ -217,21 +217,23 @@ export default function InvoicesPage() {
                           </Button>
                         </Link>
                         
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-muted"
-                          title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
-                          onClick={() => {
-                            const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
-                            navigator.clipboard.writeText(shareUrl).then(() => {
-                              showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
-                            });
-                          }}
-                        >
-                          <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                          <span className="sr-only">Copy Link</span>
-                        </Button>
+                        {isInvoicePublicViewable(invoice.status) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-muted"
+                            title="Copy shareable link"
+                            onClick={() => {
+                              const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+                              navigator.clipboard.writeText(shareUrl).then(() => {
+                                showToast("Public invoice link copied!");
+                              });
+                            }}
+                          >
+                            <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                            <span className="sr-only">Copy Link</span>
+                          </Button>
+                        )}
 
                         {invoice.status !== "paid" && (
                           <>
@@ -284,20 +286,22 @@ export default function InvoicesPage() {
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
-                      onClick={() => {
-                        const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
-                        navigator.clipboard.writeText(shareUrl).then(() => {
-                          showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
-                        });
-                      }}
-                    >
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
+                    {isInvoicePublicViewable(invoice.status) && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Copy shareable link"
+                        onClick={() => {
+                          const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+                          navigator.clipboard.writeText(shareUrl).then(() => {
+                            showToast("Public invoice link copied!");
+                          });
+                        }}
+                      >
+                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    )}
                     {invoice.status !== "paid" && (
                       <>
                         <Link href={`/invoices/new?id=${invoice._id}`} passHref legacyBehavior>

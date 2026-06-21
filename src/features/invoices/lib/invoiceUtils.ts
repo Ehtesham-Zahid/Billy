@@ -16,6 +16,14 @@ export function getComputedInvoiceStatus(status: string, dueDate: string | Date)
 }
 
 /**
+ * Determines whether an invoice's status allows public viewing.
+ * Public viewing is allowed if the invoice is NOT in "draft" status.
+ */
+export function isInvoicePublicViewable(status: string): boolean {
+  return status !== "draft";
+}
+
+/**
  * Renders a lightweight, non-blocking toast overlay on the client browser using react-hot-toast.
  */
 export function showToast(message: string) {

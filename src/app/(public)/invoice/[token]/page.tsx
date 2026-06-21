@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FileDown, Calendar, User, Mail } from "lucide-react";
 
 import { getInvoiceByTokenForPdf } from "@/services/invoice.service";
-import { getComputedInvoiceStatus } from "@/features/invoices/lib/invoiceUtils";
+import { getComputedInvoiceStatus, isInvoicePublicViewable } from "@/features/invoices/lib/invoiceUtils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,8 +24,8 @@ export default async function PublicInvoicePage({ params }: PageProps) {
 
   const invoice = await getInvoiceByTokenForPdf(token);
 
-  // Return standard generic 404 if invoice doesn't exist, or is still in Draft state
-  if (!invoice || invoice.status === "draft") {
+  // Return standard generic 404 if invoice doesn't exist, or status does not allow public viewing
+  if (!invoice || !isInvoicePublicViewable(invoice.status)) {
     notFound();
   }
 
