@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth, UserButton } from "@clerk/nextjs";
 import {
   Sparkles,
   ArrowRight,
@@ -33,6 +34,7 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
+  const { isSignedIn } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -196,18 +198,33 @@ export default function LandingPage() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
-              <Link
-                href="/login"
-                className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="text-xs font-bold bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2.5 rounded-xl transition-all shadow-md shadow-primary/10 hover:shadow-primary/20"
-              >
-                Start Free
-              </Link>
+              {!isSignedIn ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="text-xs font-bold bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2.5 rounded-xl transition-all shadow-md shadow-primary/10 hover:shadow-primary/20"
+                  >
+                    Start Free
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="text-xs font-bold bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2.5 rounded-xl transition-all shadow-md shadow-primary/10 hover:shadow-primary/20 flex items-center gap-1.5 mr-2"
+                  >
+                    Go to Dashboard
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <UserButton />
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Toggle Button */}
@@ -257,18 +274,36 @@ export default function LandingPage() {
               </button>
               <div className="h-px bg-border/25 my-3" />
               <div className="flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  className="w-full text-center py-2 rounded-xl font-medium border border-border text-foreground hover:bg-muted transition-colors text-xs"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="w-full text-center py-2.5 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs"
-                >
-                  Start Free
-                </Link>
+                {!isSignedIn ? (
+                  <>
+                    <Link
+                      href="/login"
+                      className="w-full text-center py-2 rounded-xl font-medium border border-border text-foreground hover:bg-muted transition-colors text-xs"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="w-full text-center py-2.5 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs"
+                    >
+                      Start Free
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="w-full text-center py-2 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs flex items-center justify-center gap-1.5"
+                    >
+                      Go to Dashboard
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <div className="flex items-center justify-center pt-2 gap-2 border-t border-border/20 mt-1">
+                      <span className="text-[10px] text-muted-foreground font-semibold">Logged in as:</span>
+                      <UserButton />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
