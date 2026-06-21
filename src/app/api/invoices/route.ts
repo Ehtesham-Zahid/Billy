@@ -16,6 +16,7 @@ const invoiceCreateSchema = z.object({
   items: z.array(itemSchema).min(1, "At least one item is required"),
   taxRate: z.number().nonnegative("Tax rate cannot be negative").default(0),
   notes: z.string().optional(),
+  templateId: z.string().optional(),
 }).refine(
   (data) => {
     const issue = new Date(data.issueDate);

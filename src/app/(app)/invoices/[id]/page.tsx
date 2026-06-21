@@ -68,6 +68,12 @@ interface InvoiceDetail {
     address?: string;
     taxId?: string;
   };
+  templateId?: {
+    _id: string;
+    name: string;
+    primaryColor: string;
+    layoutType: string;
+  };
 }
 
 interface PageProps {
@@ -370,6 +376,18 @@ export default function InvoiceDetailPage({ params }: PageProps) {
                   })}
                 </span>
               </div>
+              {invoice.templateId && (
+                <div className="flex justify-between items-center border-t border-border pt-3 mt-3">
+                  <span className="text-muted-foreground">Design Template</span>
+                  <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full border border-black/10 flex-shrink-0"
+                      style={{ backgroundColor: invoice.templateId.primaryColor }}
+                    />
+                    <span>{invoice.templateId.name}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

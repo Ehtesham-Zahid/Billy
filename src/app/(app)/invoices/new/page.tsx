@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, Calendar, FileText, ArrowLeft, Loader2, Info } from "lucide-react";
+import { Plus, Trash2, Calendar, FileText, ArrowLeft, Loader2, Info, Check } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ interface InvoiceDetail {
     price: number;
     amount: number;
   }[];
+  templateId?: string | { _id: string; name: string; primaryColor: string; layoutType: string };
 }
 
 // Zod validation schemas
@@ -58,6 +59,7 @@ const formSchema = z.object({
   items: z.array(itemSchema).min(1, "At least one line item is required"),
   taxRate: z.number().nonnegative("Tax rate cannot be negative"),
   notes: z.string().optional(),
+  templateId: z.string().optional(),
 }).refine(
   (data) => {
     const issue = new Date(data.issueDate);
@@ -88,6 +90,16 @@ function InvoiceFormContent() {
     },
   });
 
+  // Fetch templates list
+  const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<any[]>({
+    queryKey: ["templates"],
+    queryFn: async () => {
+      const res = await fetch("/api/templates");
+      if (!res.ok) throw new Error("Failed to fetch templates");
+      return res.json();
+    },
+  });
+
   // Fetch invoice details if editing
   const { data: invoice, isLoading: isLoadingInvoice } = useQuery<InvoiceDetail>({
     queryKey: ["invoice-edit", editId],
@@ -109,6 +121,7 @@ function InvoiceFormContent() {
       taxRate: 0,
       notes: "",
       items: [{ description: "", quantity: 1, price: 0 }],
+      templateId: "",
     },
   });
 
@@ -124,6 +137,10 @@ function InvoiceFormContent() {
       const formattedIssueDate = new Date(invoice.issueDate).toISOString().split("T")[0];
       const formattedDueDate = new Date(invoice.dueDate).toISOString().split("T")[0];
       
+      const resolvedTemplateId = invoice.templateId && typeof invoice.templateId === "object"
+        ? (invoice.templateId as any)._id
+        : invoice.templateId || "";
+
       form.reset({
         clientId: invoice.clientId,
         issueDate: formattedIssueDate,
@@ -135,9 +152,33 @@ function InvoiceFormContent() {
           quantity: item.quantity,
           price: item.price,
         })),
+        templateId: resolvedTemplateId,
       });
     }
   }, [invoice, editId, form]);
+
+  // Default the templateId for new invoices
+  useEffect(() => {
+    if (!editId && templates.length > 0) {
+      const customTemplates = templates.filter((t: any) => t.companyId);
+      const systemTemplates = templates.filter((t: any) => !t.companyId);
+      
+      let targetId = "";
+      if (customTemplates.length > 0) {
+        const sortedCustom = [...customTemplates].sort((a, b) => 
+          new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+        );
+        targetId = sortedCustom[0]._id;
+      } else {
+        const classicIndigo = systemTemplates.find((t: any) => t.name === "Classic Indigo") || systemTemplates[0];
+        targetId = classicIndigo?._id || "";
+      }
+      
+      if (targetId) {
+        form.setValue("templateId", targetId);
+      }
+    }
+  }, [editId, templates, form]);
 
   // Mutations
   const createMutation = useMutation({
@@ -217,7 +258,7 @@ function InvoiceFormContent() {
   const preview = calculatePreview();
 
   // Loading state
-  const isFormLoading = isLoadingClients || (editId && isLoadingInvoice);
+  const isFormLoading = isLoadingClients || isLoadingTemplates || (editId && isLoadingInvoice);
   if (isFormLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 space-y-4">
@@ -491,6 +532,66 @@ function InvoiceFormContent() {
                     <span className="font-mono tabular-nums text-primary">${preview.total.toFixed(2)}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Design Template block */}
+              <div className="bg-card border border-border rounded-lg p-6 shadow-sm space-y-4">
+                <h3 className="font-semibold text-foreground text-sm border-b border-border pb-2">Design Template</h3>
+                <FormField
+                  control={form.control}
+                  name="templateId"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormControl>
+                        <div className="grid grid-cols-1 gap-2">
+                          {templates.map((tpl: any) => {
+                            const isSelected = field.value === tpl._id;
+                            const isDefault = !tpl.companyId;
+                            return (
+                              <button
+                                key={tpl._id}
+                                type="button"
+                                onClick={() => field.onChange(tpl._id)}
+                                className={`flex items-center justify-between p-3 rounded-lg border text-left transition-all ${
+                                  isSelected
+                                    ? "border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary"
+                                    : "border-border hover:border-foreground/20 text-muted-foreground hover:text-foreground bg-background"
+                                }`}
+                              >
+                                <div className="flex items-center space-x-3 min-w-0">
+                                  <div
+                                    className="h-3.5 w-3.5 rounded-full border border-black/10 flex-shrink-0"
+                                    style={{ backgroundColor: tpl.primaryColor }}
+                                  />
+                                  <div className="truncate">
+                                    <div className="text-xs font-bold truncate text-foreground">{tpl.name}</div>
+                                    <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+                                      <span className="capitalize">{tpl.layoutType} layout</span>
+                                      {isDefault && (
+                                        <>
+                                          <span>•</span>
+                                          <span className="text-[8px] font-bold uppercase px-1 py-0.2 rounded bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                            Default
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                {isSelected && (
+                                  <div className="h-4 w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                                    <Check className="h-3 w-3" />
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Notes block */}

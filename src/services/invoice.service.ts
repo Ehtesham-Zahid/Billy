@@ -27,7 +27,7 @@ export async function getInvoiceById(
   id: string
 ): Promise<IInvoice | null> {
   await connectDB();
-  return Invoice.findOne({ _id: id, companyId });
+  return Invoice.findOne({ _id: id, companyId }).populate("templateId");
 }
 
 export async function getInvoiceForPdf(
@@ -58,6 +58,7 @@ export async function createInvoice(
     items: { description: string; quantity: number; price: number }[];
     taxRate?: number;
     notes?: string;
+    templateId?: string;
   }
 ): Promise<IInvoice> {
   await connectDB();
@@ -145,6 +146,7 @@ export async function createInvoice(
         token,
         clientSnapshot,
         notes: data.notes?.trim() || undefined,
+        templateId: data.templateId || undefined,
       });
 
       await newInvoice.save();
@@ -184,6 +186,7 @@ export async function updateInvoice(
     taxRate?: number;
     status?: "draft" | "sent" | "paid" | "overdue";
     notes?: string;
+    templateId?: string;
   }
 ): Promise<IInvoice | null> {
   await connectDB();
@@ -224,6 +227,11 @@ export async function updateInvoice(
   }
   if (data.dueDate) {
     updateFields.dueDate = new Date(data.dueDate);
+  }
+
+  // Template updates
+  if (data.templateId !== undefined) {
+    updateFields.templateId = data.templateId || undefined;
   }
 
   // Client updates (recopy snapshot if client changes)

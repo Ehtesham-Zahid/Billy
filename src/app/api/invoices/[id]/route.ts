@@ -17,6 +17,7 @@ const invoiceUpdateSchema = z.object({
   taxRate: z.number().nonnegative("Tax rate cannot be negative").optional(),
   status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
   notes: z.string().optional(),
+  templateId: z.string().optional(),
 }).refine(
   (data) => {
     if (data.issueDate && data.dueDate) {
