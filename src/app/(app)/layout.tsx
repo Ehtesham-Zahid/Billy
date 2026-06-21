@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
 import { getCompanyForUser } from "@/lib/clerk";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
@@ -64,6 +65,7 @@ export default async function AppLayout({
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Employee Portal</h2>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
             </div>
           </header>
 
@@ -116,6 +118,7 @@ export default async function AppLayout({
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Admin Console</h2>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
             </div>
           </header>
 
@@ -192,6 +195,7 @@ export default async function AppLayout({
         <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Workspace</h2>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
           </div>
         </header>
 

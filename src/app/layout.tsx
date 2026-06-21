@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import QueryProvider from "@/providers/QueryProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
@@ -34,7 +35,8 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           <QueryProvider>
-            {children}
+            <ThemeProvider>
+              {children}
             <Toaster
               position="top-right"
               toastOptions={{
@@ -61,7 +63,8 @@ export default function RootLayout({
                 },
               }}
             />
-          </QueryProvider>
+          </ThemeProvider>
+        </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

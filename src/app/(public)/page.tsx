@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth, UserButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   Sparkles,
   ArrowRight,
@@ -225,6 +226,7 @@ export default function LandingPage() {
                   <UserButton />
                 </>
               )}
+              <ThemeToggle />
             </div>
 
             {/* Mobile Menu Toggle Button */}
@@ -304,6 +306,10 @@ export default function LandingPage() {
                     </div>
                   </>
                 )}
+                <div className="flex items-center justify-between pt-2 border-t border-border/20 mt-1">
+                  <span className="text-xs text-muted-foreground font-medium">Appearance</span>
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
           )}
