@@ -153,19 +153,18 @@ export default function LandingPage() {
       {/* Floating Header Navigation (Sleek Pills Design) */}
       <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 transition-all duration-300">
         <header
-          className={`max-w-6xl mx-auto transition-all duration-300 rounded-full ${
-            isScrolled
-              ? "glass-card border border-border/40 shadow-xl px-6 py-2.5"
-              : "bg-transparent border border-transparent px-4 py-4"
+          className={`max-w-6xl mx-auto transition-all duration-300 ${
+            isMobileMenuOpen
+              ? "bg-card border border-border shadow-xl px-6 py-4 rounded-3xl"
+              : isScrolled
+              ? "glass-card border border-border/40 shadow-xl px-6 py-2.5 rounded-full"
+              : "bg-transparent border border-transparent px-4 py-4 rounded-full"
           }`}
         >
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => scrollToSection("hero")}>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary via-violet-600 to-accent flex items-center justify-center shadow-md">
-                <span className="text-white font-black text-sm tracking-tight">B</span>
-              </div>
-              <span className="text-lg font-black tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+            <div className="flex items-center cursor-pointer" onClick={() => scrollToSection("hero")}>
+              <span className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-violet-600 to-violet-500 text-gradient">
                 Billy
               </span>
             </div>
@@ -253,31 +252,31 @@ export default function LandingPage() {
             <div className="md:hidden mt-4 pt-4 border-t border-border/20 space-y-3 px-2">
               <button
                 onClick={() => scrollToSection("sandbox")}
-                className="block w-full text-left py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+                className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 Sandbox Demo
               </button>
               <button
                 onClick={() => scrollToSection("features")}
-                className="block w-full text-left py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+                className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection("calculator")}
-                className="block w-full text-left py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+                className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 Savings Calculator
               </button>
               <button
                 onClick={() => scrollToSection("pricing")}
-                className="block w-full text-left py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+                className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 Pricing
               </button>
               <button
                 onClick={() => scrollToSection("faq")}
-                className="block w-full text-left py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+                className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 FAQ
               </button>
@@ -341,7 +340,7 @@ export default function LandingPage() {
             </div>
 
             {/* Giant Title */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.02] text-foreground max-w-3xl mb-6">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] text-foreground max-w-4xl mb-6">
               Best HR & Billing Software Built <br />
               <span className="bg-gradient-to-r from-primary via-violet-600 to-accent text-gradient">
                 For Modern Businesses
