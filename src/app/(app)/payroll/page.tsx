@@ -120,7 +120,26 @@ export default function PayrollPage() {
       setRunResult(data);
       setIsWizardOpen(false);
       setIsResultOpen(true);
-      showToast(`Payroll processed successfully!`);
+      
+      // Calculate how many employees were skipped because they already had a payroll record
+      let alreadyHadCount = 0;
+      if (data.errors) {
+        Object.keys(data.errors).forEach((empId) => {
+          const messages = data.errors[empId] || [];
+          const hasAlreadyHad = messages.some((m: string) => 
+            m.toLowerCase().includes("already has") || m.toLowerCase().includes("already been run")
+          );
+          if (hasAlreadyHad) {
+            alreadyHadCount++;
+          }
+        });
+      }
+
+      let toastMsg = `${data.createdCount} new payroll record${data.createdCount === 1 ? "" : "s"} created.`;
+      if (alreadyHadCount > 0) {
+        toastMsg += ` ${alreadyHadCount} employee${alreadyHadCount === 1 ? "" : "s"} already had records for this period and were skipped.`;
+      }
+      showToast(toastMsg);
     },
     onError: (err: any) => {
       showToast(err.message || "Failed to run payroll");

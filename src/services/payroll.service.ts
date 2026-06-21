@@ -77,11 +77,27 @@ export async function createPayrollRun(
     };
   }
 
+  // Get existing payroll records for these employees in this period
+  const existingPayrolls = await Payroll.find({
+    companyId,
+    employeeId: { $in: employeeIds },
+    payPeriodStart,
+    payPeriodEnd,
+  });
+  const existingEmployeeIds = new Set(existingPayrolls.map((p) => p.employeeId.toString()));
+
   const errors: Record<string, string[]> = {};
   const payrollsToInsert: any[] = [];
 
   for (const employee of employees) {
     const empId = employee._id.toString();
+
+    // Check if employee already has a record for this period
+    if (existingEmployeeIds.has(empId)) {
+      errors[empId] = ["Excluded: Already has a payroll record for this period."];
+      continue;
+    }
+
     const adj = adjustments[empId] || { allowances: 0, deductions: 0 };
     const baseSalary = employee.salary;
     const allowances = adj.allowances || 0;
