@@ -160,7 +160,6 @@ export default async function EmployeePortalPage() {
                     <th className="px-6 py-4 text-right font-semibold">Deductions</th>
                     <th className="px-6 py-4 text-right font-semibold">Net Salary</th>
                     <th className="px-6 py-4 text-center font-semibold">Status</th>
-                    <th className="px-6 py-4 text-center font-semibold w-32">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border text-sm">
@@ -189,18 +188,6 @@ export default async function EmployeePortalPage() {
                         >
                           {payroll.status}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {payroll.status === "paid" ? (
-                          <Link
-                            href={`/api/payroll/${payroll._id}/pdf`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition-all shadow-sm"
-                          >
-                            <ArrowDownToLine className="h-3.5 w-3.5" /> PDF
-                          </Link>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">Pending</span>
-                        )}
                       </td>
                     </tr>
                   ))}

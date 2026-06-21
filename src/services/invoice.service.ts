@@ -281,11 +281,85 @@ export async function updateInvoice(
     updateFields.total = total;
   }
 
-  return Invoice.findOneAndUpdate(
+  const updatedInvoice = await Invoice.findOneAndUpdate(
     { _id: id, companyId },
     { $set: updateFields },
     { new: true, runValidators: true }
   );
+
+  // Send email to client if status is changed to "sent"
+  if (updatedInvoice && data.status === "sent" && currentInvoice.status !== "sent") {
+    (async () => {
+      try {
+        const gmailUser = process.env.GMAIL_USER;
+        const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+        if (!gmailUser || !gmailPass) {
+          console.warn("GMAIL_USER or GMAIL_APP_PASSWORD is not defined. Skipping automatic invoice email.");
+          return;
+        }
+
+        const company = await Company.findById(companyId);
+        const companyName = company ? company.name : "Your Company";
+        const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const invoiceUrl = `${appBaseUrl}/invoice/${updatedInvoice.token}`;
+        const formattedDueDate = new Date(updatedInvoice.dueDate).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        });
+
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: gmailUser,
+            pass: gmailPass,
+          },
+        });
+
+        await transporter.sendMail({
+          from: gmailUser,
+          to: updatedInvoice.clientSnapshot.email,
+          subject: `New Invoice ${updatedInvoice.invoiceNumber} from ${companyName}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e7; border-radius: 12px;">
+              <h2 style="color: #4f46e5; margin-bottom: 16px;">New Invoice from ${companyName}</h2>
+              <p>Hello <strong>${updatedInvoice.clientSnapshot.name}</strong>,</p>
+              <p><strong>${companyName}</strong> has sent you a new invoice <strong>${updatedInvoice.invoiceNumber}</strong>.</p>
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+                <tr>
+                  <td style="padding: 8px 0; color: #71717a;">Invoice Number:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${updatedInvoice.invoiceNumber}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #71717a;">Amount Due:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #4f46e5;">$${updatedInvoice.total.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #71717a;">Due Date:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${formattedDueDate}</td>
+                </tr>
+              </table>
+              <p>Click the button below to view the invoice, download the PDF, or make a payment:</p>
+              <div style="margin: 24px 0; text-align: center;">
+                <a href="${invoiceUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">View Invoice</a>
+              </div>
+              <p style="font-size: 12px; color: #71717a; margin-top: 24px;">
+                If the button doesn't work, copy and paste this link in your browser:<br/>
+                <a href="${invoiceUrl}" style="color: #4f46e5;">${invoiceUrl}</a>
+              </p>
+            </div>
+          `,
+        });
+        console.log(`Successfully sent invoice email to ${updatedInvoice.clientSnapshot.email} via Gmail SMTP`);
+      } catch (emailErr) {
+        console.error("Failed to send invoice email to client:", emailErr);
+      }
+    })();
+  }
+
+  return updatedInvoice;
 }
 
 export async function deleteInvoice(

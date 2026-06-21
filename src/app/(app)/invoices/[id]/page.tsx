@@ -259,7 +259,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
               disabled={statusMutation.isPending}
               onClick={() => statusMutation.mutate("sent")}
             >
-              <Send className="mr-2 h-4 w-4" /> Mark as Sent
+              <Send className="mr-2 h-4 w-4" /> Send
             </Button>
           )}
 

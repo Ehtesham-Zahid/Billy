@@ -1,13 +1,14 @@
 import React from "react";
-import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getCompanyForUser } from "@/lib/clerk";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import { Employee } from "@/models/Employee";
+import { Company } from "@/models/Company";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import SidebarClient from "./SidebarClient";
 
 export default async function AppLayout({
   children,
@@ -23,7 +24,7 @@ export default async function AppLayout({
   const headerList = await headers();
   const pathname = headerList.get("x-pathname") || "";
 
-  // 1. Custom Employee Portal Layout
+  // 1. Role-based Route Guard checking
   if (role === "employee" || employee) {
     // Force employees to redirect to /my if trying to access company or admin dashboard routes
     const isForbiddenPathForEmployee =
@@ -39,45 +40,27 @@ export default async function AppLayout({
     if (isForbiddenPathForEmployee) {
       redirect("/my");
     }
+
+    let companyName = "Employee Portal";
+    if (employee) {
+      const empCompany = await Company.findById(employee.companyId);
+      if (empCompany) {
+        companyName = empCompany.name;
+      }
+    }
+
     return (
-      <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
-        <aside className="w-64 border-r border-border bg-card flex flex-col">
-          <div className="h-16 flex items-center px-6 border-b border-border">
-            <span className="text-xl font-bold text-primary tracking-tight">
-              Billy Portal
-            </span>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/my"
-              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary/10 text-primary transition-colors"
-            >
-              My Payroll
-            </Link>
-          </nav>
-          <div className="p-4 border-t border-border flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-mono">v1.0.0</span>
-            <UserButton />
-          </div>
-        </aside>
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">Employee Portal</h2>
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-            </div>
-          </header>
-
-          <main className="flex-1 overflow-y-auto p-8 bg-background">
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </main>
-        </div>
-      </div>
+      <SidebarClient
+        role="employee"
+        companyName={companyName}
+        userButton={<UserButton />}
+        themeToggle={<ThemeToggle />}
+      >
+        {children}
+      </SidebarClient>
     );
   }
 
-  // 2. Custom Platform Admin Layout
   if (role === "platform_admin") {
     const isForbiddenPathForAdmin =
       pathname.startsWith("/dashboard") ||
@@ -92,118 +75,30 @@ export default async function AppLayout({
     if (isForbiddenPathForAdmin) {
       redirect("/admin");
     }
+
     return (
-      <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
-        <aside className="w-64 border-r border-border bg-card flex flex-col">
-          <div className="h-16 flex items-center px-6 border-b border-border">
-            <span className="text-xl font-bold text-primary tracking-tight">
-              Billy Admin
-            </span>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/admin"
-              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary/10 text-primary transition-colors"
-            >
-              Platform Overview
-            </Link>
-          </nav>
-          <div className="p-4 border-t border-border flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-mono">v1.0.0</span>
-            <UserButton />
-          </div>
-        </aside>
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">Admin Console</h2>
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-            </div>
-          </header>
-
-          <main className="flex-1 overflow-y-auto p-8 bg-background">
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </main>
-        </div>
-      </div>
+      <SidebarClient
+        role="platform_admin"
+        companyName="Platform Admin"
+        userButton={<UserButton />}
+        themeToggle={<ThemeToggle />}
+      >
+        {children}
+      </SidebarClient>
     );
   }
 
   // 3. Standard Company Layout
-  await getCompanyForUser();
+  const company = await getCompanyForUser();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-border">
-          <Link href="/dashboard" className="text-xl font-bold text-primary tracking-tight">
-            Billy
-          </Link>
-        </div>
-        <nav className="flex-1 p-4 space-y-1">
-          <Link
-            href="/dashboard"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/invoices"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Invoices
-          </Link>
-          <Link
-            href="/clients"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Clients
-          </Link>
-          <Link
-            href="/employees"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Employees
-          </Link>
-          <Link
-            href="/payroll"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Payroll
-          </Link>
-          <Link
-            href="/templates"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Templates
-          </Link>
-          <Link
-            href="/settings"
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            Settings
-          </Link>
-        </nav>
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <span className="text-xs text-muted-foreground font-mono">v1.0.0</span>
-          <UserButton />
-        </div>
-      </aside>
-
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">Workspace</h2>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-8 bg-background">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
-      </div>
-    </div>
+    <SidebarClient
+      role="company"
+      companyName={company?.name || "Workspace"}
+      userButton={<UserButton />}
+      themeToggle={<ThemeToggle />}
+    >
+      {children}
+    </SidebarClient>
   );
 }
-
