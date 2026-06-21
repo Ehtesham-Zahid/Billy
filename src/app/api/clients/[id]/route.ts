@@ -30,9 +30,6 @@ export async function GET(req: Request, { params }: RouteProps) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (error.message === "CompanyNotFound") {
-      return NextResponse.json({ error: "Company profile not found" }, { status: 404 });
-    }
     console.error("GET /api/clients/[id] error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -59,9 +56,6 @@ export async function PATCH(req: Request, { params }: RouteProps) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (error.message === "CompanyNotFound") {
-      return NextResponse.json({ error: "Company profile not found" }, { status: 404 });
-    }
     console.error("PATCH /api/clients/[id] error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -81,9 +75,6 @@ export async function DELETE(req: Request, { params }: RouteProps) {
   } catch (error: any) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (error.message === "CompanyNotFound") {
-      return NextResponse.json({ error: "Company profile not found" }, { status: 404 });
     }
     console.error("DELETE /api/clients/[id] error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

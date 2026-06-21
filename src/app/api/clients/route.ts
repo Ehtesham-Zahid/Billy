@@ -20,9 +20,6 @@ export async function GET() {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (error.message === "CompanyNotFound") {
-      return NextResponse.json({ error: "Company profile not found" }, { status: 404 });
-    }
     console.error("GET /api/clients error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -43,9 +40,6 @@ export async function POST(req: Request) {
   } catch (error: any) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (error.message === "CompanyNotFound") {
-      return NextResponse.json({ error: "Company profile not found" }, { status: 404 });
     }
     console.error("POST /api/clients error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -1,12 +1,15 @@
 import React from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { getCompanyForUser } from "@/lib/clerk";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Enforce lazy on-demand Company creation on entering the workspace
+  await getCompanyForUser();
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
       {/* Sidebar Shell */}
