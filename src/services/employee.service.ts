@@ -32,9 +32,11 @@ export async function createEmployee(
   // Asynchronously dispatch the email without blocking employee creation return
   (async () => {
     try {
-      const apiKey = process.env.RESEND_API_KEY;
-      if (!apiKey) {
-        console.warn("RESEND_API_KEY is not defined. Skipping automatic invite email.");
+      const gmailUser = process.env.GMAIL_USER;
+      const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+      if (!gmailUser || !gmailPass) {
+        console.warn("GMAIL_USER or GMAIL_APP_PASSWORD is not defined. Skipping automatic invite email.");
         return;
       }
 
@@ -43,10 +45,17 @@ export async function createEmployee(
       const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       const inviteUrl = `${appBaseUrl}/invite/${inviteToken}`;
 
-      const { Resend } = await import("resend");
-      const resend = new Resend(apiKey);
-      await resend.emails.send({
-        from: "onboarding@resend.dev",
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: gmailUser,
+          pass: gmailPass,
+        },
+      });
+
+      await transporter.sendMail({
+        from: gmailUser,
         to: savedEmployee.email,
         subject: `Invitation to join ${companyName} on Billy`,
         html: `
@@ -64,7 +73,7 @@ export async function createEmployee(
           </div>
         `,
       });
-      console.log(`Successfully sent invite email to ${savedEmployee.email}`);
+      console.log(`Successfully sent invite email to ${savedEmployee.email} via Gmail SMTP`);
     } catch (emailErr) {
       console.error("Failed to send invite email to employee:", emailErr);
     }
