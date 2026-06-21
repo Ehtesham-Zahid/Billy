@@ -153,12 +153,10 @@ export default function LandingPage() {
       {/* Floating Header Navigation (Sleek Pills Design) */}
       <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 transition-all duration-300">
         <header
-          className={`max-w-6xl mx-auto transition-all duration-300 ${
-            isMobileMenuOpen
-              ? "bg-card border border-border shadow-xl px-6 py-4 rounded-3xl"
-              : isScrolled
-              ? "glass-card border border-border/40 shadow-xl px-6 py-2.5 rounded-full"
-              : "bg-transparent border border-transparent px-4 py-4 rounded-full"
+          className={`max-w-6xl mx-auto transition-all duration-300 rounded-full ${
+            isScrolled || isMobileMenuOpen
+              ? "glass-card border border-border/40 shadow-xl px-6 py-2.5"
+              : "bg-transparent border border-transparent px-4 py-4"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -246,10 +244,12 @@ export default function LandingPage() {
               </button>
             </div>
           </div>
+        </header>
 
-          {/* Mobile Navigation Drawer */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 pt-4 border-t border-border/20 space-y-3 px-2">
+        {/* Mobile Navigation Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-2 max-w-6xl mx-auto bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-200">
+            <nav className="flex flex-col space-y-3">
               <button
                 onClick={() => scrollToSection("sandbox")}
                 className="block w-full text-center py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -280,46 +280,46 @@ export default function LandingPage() {
               >
                 FAQ
               </button>
-              <div className="h-px bg-border/25 my-3" />
-              <div className="flex flex-col gap-2">
-                {!isSignedIn ? (
-                  <>
-                    <Link
-                      href="/login"
-                      className="w-full text-center py-2 rounded-full font-semibold border border-border text-foreground hover:bg-muted transition-colors text-xs"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="w-full text-center py-2.5 rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs"
-                    >
-                      Unlimited Free Trial
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/dashboard"
-                      className="w-full text-center py-2 rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs flex items-center justify-center gap-1.5"
-                    >
-                      Go to Dashboard
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                    <div className="flex items-center justify-center pt-2 gap-2 border-t border-border/20 mt-1">
-                      <span className="text-[10px] text-muted-foreground font-semibold">Account:</span>
-                      <UserButton />
-                    </div>
-                  </>
-                )}
-                <div className="flex items-center justify-between pt-2 border-t border-border/20 mt-1">
-                  <span className="text-xs text-muted-foreground font-semibold">Theme</span>
-                  <ThemeToggle />
-                </div>
+            </nav>
+            <div className="h-px bg-border/25 my-3" />
+            <div className="flex flex-col gap-2">
+              {!isSignedIn ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="w-full text-center py-2 rounded-full font-semibold border border-border text-foreground hover:bg-muted transition-colors text-xs"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="w-full text-center py-2.5 rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs"
+                  >
+                    Unlimited Free Trial
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="w-full text-center py-2 rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-lg text-xs flex items-center justify-center gap-1.5"
+                  >
+                    Go to Dashboard
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <div className="flex items-center justify-center pt-2 gap-2 border-t border-border/20 mt-1">
+                    <span className="text-[10px] text-muted-foreground font-semibold">Account:</span>
+                    <UserButton />
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between pt-2 border-t border-border/20 mt-1">
+                <span className="text-xs text-muted-foreground font-semibold">Theme</span>
+                <ThemeToggle />
               </div>
             </div>
-          )}
-        </header>
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
