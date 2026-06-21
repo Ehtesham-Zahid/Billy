@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+// Register all models to prevent MissingSchemaErrors during population
+import "@/models/Company";
+import "@/models/Client";
+import "@/models/Employee";
+import "@/models/InvoiceTemplate";
+import "@/models/Invoice";
+import "@/models/Payroll";
+
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
