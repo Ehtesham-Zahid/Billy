@@ -62,6 +62,13 @@ export async function createInvoice(
 ): Promise<IInvoice> {
   await connectDB();
 
+  // Validate dates
+  const issue = new Date(data.issueDate);
+  const due = new Date(data.dueDate);
+  if (due < issue) {
+    throw new Error("DateValidationError: Due date cannot be before the issue date.");
+  }
+
   // 1. Fetch target client for static demographic copy
   const client = await Client.findOne({ _id: data.clientId, companyId });
   if (!client) {
@@ -127,8 +134,8 @@ export async function createInvoice(
         companyId,
         clientId: data.clientId,
         invoiceNumber,
-        issueDate: new Date(data.issueDate),
-        dueDate: new Date(data.dueDate),
+        issueDate: issue,
+        dueDate: due,
         items,
         subtotal,
         taxRate,
@@ -190,6 +197,13 @@ export async function updateInvoice(
   // Prevent modifications of paid invoices
   if (currentInvoice.status === "paid") {
     throw new Error("InvoiceLocked: Paid invoices cannot be edited.");
+  }
+
+  // Validate dates if updated
+  const newIssue = data.issueDate ? new Date(data.issueDate) : currentInvoice.issueDate;
+  const newDue = data.dueDate ? new Date(data.dueDate) : currentInvoice.dueDate;
+  if (newDue < newIssue) {
+    throw new Error("DateValidationError: Due date cannot be before the issue date.");
   }
 
   const updateFields: any = {};

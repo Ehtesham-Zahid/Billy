@@ -103,13 +103,12 @@ export default function PayrollDetailPage() {
   const [yearStr, monthStr] = id.split("-");
   const year = parseInt(yearStr, 10);
   const month = parseInt(monthStr, 10) - 1;
-  const startDateObj = new Date(year, month, 1);
-  const endDateObj = new Date(year, month + 1, 0);
   
-  const startIso = startDateObj.toISOString().split("T")[0];
-  const endIso = endDateObj.toISOString().split("T")[0];
+  const startIso = `${yearStr}-${monthStr.padStart(2, "0")}-01`;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const endIso = `${yearStr}-${monthStr.padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-  const displayPeriod = startDateObj.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const displayPeriod = new Date(year, month, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
   // Query: Get payroll list details
   const { data: records = [], isLoading, isError } = useQuery<PayrollRecord[]>({

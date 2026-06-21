@@ -707,6 +707,7 @@ export default function EmployeesPage() {
                         const periodLabel = start.toLocaleDateString(undefined, {
                           month: "short",
                           year: "numeric",
+                          timeZone: "UTC",
                         });
                         return (
                           <TableRow key={run._id} className="text-xs hover:bg-muted/20">

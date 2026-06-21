@@ -58,7 +58,17 @@ const formSchema = z.object({
   items: z.array(itemSchema).min(1, "At least one line item is required"),
   taxRate: z.number().nonnegative("Tax rate cannot be negative"),
   notes: z.string().optional(),
-});
+}).refine(
+  (data) => {
+    const issue = new Date(data.issueDate);
+    const due = new Date(data.dueDate);
+    return due >= issue;
+  },
+  {
+    message: "Due date cannot be before the issue date.",
+    path: ["dueDate"],
+  }
+);
 
 type FormValues = z.infer<typeof formSchema>;
 

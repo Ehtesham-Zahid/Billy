@@ -140,9 +140,13 @@ export default function PayrollPage() {
   };
 
   const handleRunPayrollSubmit = () => {
-    // Construct payPeriodDates
-    const startDate = new Date(selectedYear, selectedMonth, 1);
-    const endDate = new Date(selectedYear, selectedMonth + 1, 0);
+    // Construct payPeriodDates in a timezone-agnostic manner
+    const yearStr = String(selectedYear);
+    const monthStr = String(selectedMonth + 1).padStart(2, "0");
+    const payPeriodStart = `${yearStr}-${monthStr}-01`;
+    
+    const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const payPeriodEnd = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
     const payloadAdjustments: Record<string, { allowances: number; deductions: number }> = {};
     
@@ -160,16 +164,16 @@ export default function PayrollPage() {
     }
 
     runPayrollMutation.mutate({
-      payPeriodStart: startDate.toISOString().split("T")[0],
-      payPeriodEnd: endDate.toISOString().split("T")[0],
+      payPeriodStart,
+      payPeriodEnd,
       adjustments: payloadAdjustments,
     });
   };
 
   const getRunId = (start: string) => {
     const d = new Date(start);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
     return `${year}-${month}`;
   };
 
@@ -274,7 +278,7 @@ export default function PayrollPage() {
                 <tbody className="divide-y divide-border text-foreground">
                   {runs.map((run) => {
                     const start = new Date(run._id.payPeriodStart);
-                    const periodLabel = start.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+                    const periodLabel = start.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" });
                     const runId = getRunId(run._id.payPeriodStart);
                     const isDraft = run.draftCount > 0;
                     

@@ -17,7 +17,20 @@ const invoiceUpdateSchema = z.object({
   taxRate: z.number().nonnegative("Tax rate cannot be negative").optional(),
   status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
   notes: z.string().optional(),
-});
+}).refine(
+  (data) => {
+    if (data.issueDate && data.dueDate) {
+      const issue = new Date(data.issueDate);
+      const due = new Date(data.dueDate);
+      return due >= issue;
+    }
+    return true;
+  },
+  {
+    message: "Due date cannot be before the issue date.",
+    path: ["dueDate"],
+  }
+);
 
 interface RouteProps {
   params: Promise<{ id: string }>;
@@ -69,6 +82,9 @@ export async function PATCH(req: Request, { params }: RouteProps) {
     }
     if (error.message?.includes("InvoiceLocked")) {
       return NextResponse.json({ error: "Paid invoices are locked and cannot be edited" }, { status: 400 });
+    }
+    if (error.message?.includes("DateValidationError")) {
+      return NextResponse.json({ error: { dueDate: ["Due date cannot be before the issue date."] } }, { status: 400 });
     }
     console.error("PATCH /api/invoices/[id] error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
