@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { Plus, Eye, Edit2, Trash2, Calendar, FileText, Loader2, ArrowRight } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Calendar, FileText, Loader2, ArrowRight, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { getComputedInvoiceStatus, showToast } from "@/features/invoices/lib/invoiceUtils";
 
 interface InvoiceData {
   _id: string;
@@ -31,10 +32,12 @@ interface InvoiceData {
   issueDate: string;
   total: number;
   status: "draft" | "sent" | "paid" | "overdue";
+  token: string;
   clientSnapshot: {
     name: string;
     email: string;
   };
+  displayStatus?: "draft" | "sent" | "paid" | "overdue";
 }
 
 export default function InvoicesPage() {
@@ -44,19 +47,25 @@ export default function InvoicesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingInvoice, setDeletingInvoice] = useState<InvoiceData | null>(null);
 
-  // Query: Get invoices matching status filter
-  const { data: invoices = [], isLoading, isError, error } = useQuery<InvoiceData[]>({
-    queryKey: ["invoices", statusFilter],
+  // Query: Get all invoices to perform computed display status filtering on client
+  const { data: rawInvoices = [], isLoading, isError, error } = useQuery<InvoiceData[]>({
+    queryKey: ["invoices"],
     queryFn: async () => {
-      const url = statusFilter === "all" 
-        ? "/api/invoices" 
-        : `/api/invoices?status=${statusFilter}`;
-      const res = await fetch(url);
+      const res = await fetch("/api/invoices");
       if (!res.ok) {
         throw new Error("Failed to fetch invoices");
       }
       return res.json();
     },
+  });
+
+  // Compute status on-the-fly and filter on the client side
+  const invoices = rawInvoices.map((invoice) => ({
+    ...invoice,
+    displayStatus: getComputedInvoiceStatus(invoice.status, invoice.dueDate),
+  })).filter((invoice) => {
+    if (statusFilter === "all") return true;
+    return invoice.displayStatus === statusFilter;
   });
 
   // Mutation: Delete an invoice
@@ -197,7 +206,7 @@ export default function InvoicesPage() {
                       ${invoice.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className={getStatusBadgeClass(invoice.status)}>{invoice.status}</span>
+                      <span className={getStatusBadgeClass(invoice.displayStatus)}>{invoice.displayStatus}</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -207,7 +216,24 @@ export default function InvoicesPage() {
                             <span className="sr-only">View</span>
                           </Button>
                         </Link>
-                        {invoice.status !== "paid" ? (
+                        
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-muted"
+                          title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
+                          onClick={() => {
+                            const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+                            navigator.clipboard.writeText(shareUrl).then(() => {
+                              showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
+                            });
+                          }}
+                        >
+                          <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                          <span className="sr-only">Copy Link</span>
+                        </Button>
+
+                        {invoice.status !== "paid" && (
                           <>
                             <Link href={`/invoices/new?id=${invoice._id}`} passHref legacyBehavior>
                               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
@@ -228,8 +254,6 @@ export default function InvoicesPage() {
                               <span className="sr-only">Delete</span>
                             </Button>
                           </>
-                        ) : (
-                          <div className="w-16" /> /* Placeholder space so columns align properly */
                         )}
                       </div>
                     </TableCell>
@@ -250,7 +274,7 @@ export default function InvoicesPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold font-mono text-foreground">{invoice.invoiceNumber}</span>
-                      <span className={getStatusBadgeClass(invoice.status)}>{invoice.status}</span>
+                      <span className={getStatusBadgeClass(invoice.displayStatus)}>{invoice.displayStatus}</span>
                     </div>
                     <h3 className="font-semibold text-foreground mt-2">{invoice.clientSnapshot.name}</h3>
                   </div>
@@ -260,6 +284,20 @@ export default function InvoicesPage() {
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
+                      onClick={() => {
+                        const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                          showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
+                        });
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
                     {invoice.status !== "paid" && (
                       <>
                         <Link href={`/invoices/new?id=${invoice._id}`} passHref legacyBehavior>
@@ -347,3 +385,4 @@ export default function InvoicesPage() {
     </div>
   );
 }
+

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FileDown, Calendar, User, Mail } from "lucide-react";
 
 import { getInvoiceByTokenForPdf } from "@/services/invoice.service";
+import { getComputedInvoiceStatus } from "@/features/invoices/lib/invoiceUtils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -27,6 +28,8 @@ export default async function PublicInvoicePage({ params }: PageProps) {
   if (!invoice || invoice.status === "draft") {
     notFound();
   }
+
+  const displayStatus = getComputedInvoiceStatus(invoice.status, invoice.dueDate);
 
   const getStatusBadgeClass = (status: string) => {
     const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide shadow-sm text-white";
@@ -98,7 +101,7 @@ export default async function PublicInvoicePage({ params }: PageProps) {
             </div>
             <div className="sm:text-right space-y-2">
               <span className="text-xs uppercase text-muted-foreground block tracking-wider font-semibold">Invoice Status</span>
-              <span className={getStatusBadgeClass(invoice.status)}>{invoice.status}</span>
+              <span className={getStatusBadgeClass(displayStatus)}>{displayStatus}</span>
             </div>
           </div>
 

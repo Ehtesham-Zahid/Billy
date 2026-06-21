@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+import { getComputedInvoiceStatus } from "../lib/invoiceUtils";
 
 interface InvoicePDFProps {
   invoice: any;
@@ -9,6 +10,7 @@ export const InvoicePDFTemplate: React.FC<InvoicePDFProps> = ({ invoice }) => {
   const template = invoice.templateId || {};
   const primaryColor = template.primaryColor || "#4F46E5";
   const layoutType = template.layoutType || "default";
+  const displayStatus = getComputedInvoiceStatus(invoice.status, invoice.dueDate);
   const company = invoice.companyId || {};
 
   const issueDateFormatted = new Date(invoice.issueDate).toLocaleDateString(undefined, {
@@ -220,9 +222,9 @@ export const InvoicePDFTemplate: React.FC<InvoicePDFProps> = ({ invoice }) => {
                 fontSize: 9,
                 textTransform: "uppercase",
                 fontWeight: "bold",
-                color: invoice.status === "paid" ? "#10B981" : invoice.status === "sent" ? "#3B82F6" : invoice.status === "overdue" ? "#EF4444" : "#71717A"
+                color: displayStatus === "paid" ? "#10B981" : displayStatus === "sent" ? "#3B82F6" : displayStatus === "overdue" ? "#EF4444" : "#71717A"
               }}>
-                {invoice.status}
+                {displayStatus}
               </Text>
             </View>
           </View>

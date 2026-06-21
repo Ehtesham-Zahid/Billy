@@ -16,7 +16,10 @@ import {
   Send,
   Loader2,
   FileDown,
+  Copy,
 } from "lucide-react";
+
+import { getComputedInvoiceStatus, showToast } from "@/features/invoices/lib/invoiceUtils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -170,6 +173,8 @@ export default function InvoiceDetailPage({ params }: PageProps) {
     );
   }
 
+  const displayStatus = getComputedInvoiceStatus(invoice.status, invoice.dueDate);
+
   return (
     <div className="space-y-6">
       {/* Header controls bar */}
@@ -185,7 +190,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
               <h1 className="text-2xl font-bold font-mono tracking-tight text-foreground">
                 {invoice.invoiceNumber}
               </h1>
-              <span className={getStatusBadgeClass(invoice.status)}>{invoice.status}</span>
+              <span className={getStatusBadgeClass(displayStatus)}>{displayStatus}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1 font-mono">
               Share Token: {invoice.token}
@@ -216,7 +221,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
             </Button>
           )}
 
-          {/* Action: Download PDF (Phase 2 Stub) */}
+          {/* Action: Download PDF */}
           <Link href={`/api/invoices/${invoice._id}/pdf`} passHref legacyBehavior>
             <a target="_blank" rel="noreferrer">
               <Button variant="outline" size="sm" className="h-9">
@@ -224,6 +229,22 @@ export default function InvoiceDetailPage({ params }: PageProps) {
               </Button>
             </a>
           </Link>
+
+          {/* Action: Copy Link */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9"
+            title={invoice.status === "draft" ? "Copy draft link (not viewable until sent)" : "Copy shareable link"}
+            onClick={() => {
+              const shareUrl = `${window.location.origin}/invoice/${invoice.token}`;
+              navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast(invoice.status === "draft" ? "Draft link copied to clipboard!" : "Public invoice link copied!");
+              });
+            }}
+          >
+            <Copy className="mr-2 h-4 w-4 text-muted-foreground" /> Copy Link
+          </Button>
 
           {/* Action: Mark Sent */}
           {invoice.status === "draft" && (
