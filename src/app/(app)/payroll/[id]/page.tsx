@@ -221,7 +221,45 @@ export default function PayrollDetailPage() {
     }
   });
 
+  // Mutation: Mark single record as paid
+  const markPaidMutation = useMutation({
+    mutationFn: async (recordId: string) => {
+      const res = await fetch(`/api/payroll/${recordId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "paid" }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to mark as paid");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payroll-runs"] });
+      queryClient.invalidateQueries({ queryKey: ["payroll-details", id] });
+      queryClient.invalidateQueries({ queryKey: ["payroll-report", id] });
+      showToast("Employee payslip marked as paid successfully.");
+    },
+    onError: (err: any) => {
+      showToast(err.message);
+    }
+  });
+
+  const handleMarkPaidClick = (record: PayrollRecord) => {
+    if (record.status === "paid") return;
+    const empName = record.employeeId ? `${record.employeeId.firstName} ${record.employeeId.lastName}` : "this employee";
+    const confirmed = window.confirm(`Are you sure you want to finalize and mark the payroll for ${empName} as paid? This will lock their slip and cannot be undone.`);
+    if (confirmed) {
+      markPaidMutation.mutate(record._id);
+    }
+  };
+
   const handleEditClick = (record: PayrollRecord) => {
+    if (record.status === "paid") {
+      showToast("Cannot edit a paid payroll record");
+      return;
+    }
     setEditingRecord(record);
     setEditAllowances(String(record.allowances));
     setEditDeductions(String(record.deductions));
@@ -388,7 +426,8 @@ export default function PayrollDetailPage() {
                       <th scope="col" className="px-5 py-3 text-right">Allow.</th>
                       <th scope="col" className="px-5 py-3 text-right">Deduct.</th>
                       <th scope="col" className="px-5 py-3 text-right font-bold text-foreground">Net Pay</th>
-                      {isDraftRun && <th scope="col" className="px-5 py-3 text-center w-20">Actions</th>}
+                      <th scope="col" className="px-5 py-3 text-center w-24">Status</th>
+                      {isDraftRun && <th scope="col" className="px-5 py-3 text-center w-36">Actions</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border text-foreground">
@@ -418,30 +457,55 @@ export default function PayrollDetailPage() {
                           <td className="px-5 py-3.5 text-right font-mono text-sm font-bold text-foreground">
                             ${run.netSalary.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              run.status === "draft" ? "bg-zinc-100 text-zinc-800" : "bg-emerald-100 text-emerald-800"
+                            }`}>
+                              {run.status === "draft" ? "Draft" : "Paid"}
+                            </span>
+                          </td>
                           {isDraftRun && (
                             <td className="px-5 py-3.5 text-center">
-                              <div className="flex items-center justify-center gap-0.5">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 hover:bg-muted"
-                                  onClick={() => handleEditClick(run)}
-                                >
-                                  <Edit2 className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                                  <span className="sr-only">Edit</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 hover:bg-destructive/10 text-destructive/80 hover:text-destructive"
-                                  onClick={() => {
-                                    setDeletingRecordId(run._id);
-                                    setIsDeleteRecordOpen(true);
-                                  }}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  <span className="sr-only">Delete</span>
-                                </Button>
+                              <div className="flex items-center justify-center gap-1.5">
+                                {run.status === "draft" ? (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 hover:bg-muted"
+                                      onClick={() => handleEditClick(run)}
+                                    >
+                                      <Edit2 className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                                      <span className="sr-only">Edit</span>
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 hover:bg-destructive/10 text-destructive/80 hover:text-destructive"
+                                      onClick={() => {
+                                        setDeletingRecordId(run._id);
+                                        setIsDeleteRecordOpen(true);
+                                      }}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <span className="sr-only">Delete</span>
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 text-[10px] font-semibold px-2 border-emerald-500/30 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shadow-sm"
+                                      onClick={() => handleMarkPaidClick(run)}
+                                      disabled={markPaidMutation.isPending}
+                                    >
+                                      Mark Paid
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <div className="flex items-center justify-center text-muted-foreground text-xs gap-1 py-1 px-2">
+                                    <Lock className="h-3.5 w-3.5 text-muted-foreground/60" />
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Locked</span>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           )}
