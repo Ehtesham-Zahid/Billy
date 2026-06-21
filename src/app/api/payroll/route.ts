@@ -14,6 +14,7 @@ import { z } from "zod";
 const payrollCreateSchema = z.object({
   payPeriodStart: z.string().transform((str) => new Date(str)),
   payPeriodEnd: z.string().transform((str) => new Date(str)),
+  employeeIds: z.array(z.string()),
   adjustments: z.record(
     z.string(),
     z.object({
@@ -72,12 +73,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parseResult.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { payPeriodStart, payPeriodEnd, adjustments } = parseResult.data;
+    const { payPeriodStart, payPeriodEnd, employeeIds, adjustments } = parseResult.data;
 
     const result = await createPayrollRun(
       company._id as string,
       payPeriodStart,
       payPeriodEnd,
+      employeeIds,
       adjustments
     );
 

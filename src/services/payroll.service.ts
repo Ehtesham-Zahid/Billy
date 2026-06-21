@@ -59,12 +59,17 @@ export async function createPayrollRun(
   companyId: string,
   payPeriodStart: Date,
   payPeriodEnd: Date,
+  employeeIds: string[],
   adjustments: Record<string, { allowances: number; deductions: number }>
 ): Promise<{ createdCount: number; errors: Record<string, string[]> }> {
   await connectDB();
 
-  // Get all active employees for this company
-  const employees = await Employee.find({ companyId, status: "active" });
+  // Get only the specified active employees for this company
+  const employees = await Employee.find({
+    _id: { $in: employeeIds },
+    companyId,
+    status: "active",
+  });
   if (employees.length === 0) {
     return {
       createdCount: 0,

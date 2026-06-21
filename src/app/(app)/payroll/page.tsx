@@ -104,6 +104,7 @@ export default function PayrollPage() {
     mutationFn: async (payload: {
       payPeriodStart: string;
       payPeriodEnd: string;
+      employeeIds: string[];
       adjustments: Record<string, { allowances: number; deductions: number }>;
     }) => {
       const res = await fetch("/api/payroll", {
@@ -148,17 +149,19 @@ export default function PayrollPage() {
     const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
     const payPeriodEnd = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
+    const employeeIds: string[] = [];
     const payloadAdjustments: Record<string, { allowances: number; deductions: number }> = {};
     
     Object.keys(includedEmployees).forEach((empId) => {
       if (includedEmployees[empId]) {
+        employeeIds.push(empId);
         const allowances = Number(adjustments[empId]?.allowances || 0);
         const deductions = Number(adjustments[empId]?.deductions || 0);
         payloadAdjustments[empId] = { allowances, deductions };
       }
     });
 
-    if (Object.keys(payloadAdjustments).length === 0) {
+    if (employeeIds.length === 0) {
       showToast("Please include at least one employee in the payroll run");
       return;
     }
@@ -166,6 +169,7 @@ export default function PayrollPage() {
     runPayrollMutation.mutate({
       payPeriodStart,
       payPeriodEnd,
+      employeeIds,
       adjustments: payloadAdjustments,
     });
   };
