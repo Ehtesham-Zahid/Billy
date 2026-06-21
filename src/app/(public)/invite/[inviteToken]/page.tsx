@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/db";
 import { Employee } from "@/models/Employee";
 import { Company } from "@/models/Company";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { SignUp, SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +14,7 @@ interface PageProps {
 export default async function InvitePage({ params }: PageProps) {
   const { inviteToken } = await params;
   const { userId, sessionClaims } = await auth();
+  const user = userId ? await currentUser() : null;
 
   await connectDB();
   const employee = await Employee.findOne({ inviteToken });
@@ -107,6 +108,37 @@ export default async function InvitePage({ params }: PageProps) {
       );
     }
 
+    // Check Case D: Email Mismatch
+    const hasEmailMatch = user?.emailAddresses.some(
+      (e) => e.emailAddress.toLowerCase() === employee.email.toLowerCase()
+    );
+    if (!hasEmailMatch) {
+      const loggedInEmail = user?.emailAddresses[0]?.emailAddress || "your current account";
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-foreground">
+          <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 shadow-xl text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
+              <AlertTriangle className="h-8 w-8" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Email Mismatch</h2>
+              <p className="text-muted-foreground text-sm">
+                This invitation was sent to <span className="font-semibold text-foreground">{employee.email}</span>, but you are signed in as <span className="font-semibold text-foreground">{loggedInEmail}</span>.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Please sign out and accept this invite using the correct email address.
+              </p>
+            </div>
+            <SignOutButton signOutOptions={{ redirectUrl: `/invite/${inviteToken}` }}>
+              <button className="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-colors shadow-sm cursor-pointer">
+                Sign Out & Accept Invite
+              </button>
+            </SignOutButton>
+          </div>
+        </div>
+      );
+    }
+
     // 3. Perform linking atomically
     const linkedEmployee = await Employee.findOneAndUpdate(
       { inviteToken, clerkUserId: { $exists: false } },
@@ -166,6 +198,9 @@ export default async function InvitePage({ params }: PageProps) {
         <SignUp
           routing="hash"
           fallbackRedirectUrl={`/invite/${inviteToken}`}
+          initialValues={{
+            emailAddress: employee.email,
+          }}
         />
       </div>
     </div>
