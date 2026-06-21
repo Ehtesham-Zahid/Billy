@@ -6,6 +6,7 @@ export interface IEmployee extends Document {
   lastName: string;
   email: string;
   position?: string;
+  department?: string;
   salary: number;
   bankAccount?: string;
   status: "active" | "inactive";
@@ -20,6 +21,7 @@ const EmployeeSchema: Schema = new Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true },
     position: { type: String },
+    department: { type: String },
     salary: { type: Number, required: true, min: 0 },
     bankAccount: { type: String },
     status: { type: String, enum: ["active", "inactive"], default: "active", required: true },
