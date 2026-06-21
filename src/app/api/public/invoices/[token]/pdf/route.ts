@@ -1,27 +1,26 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getCompanyForUser } from "@/lib/clerk";
-import { getInvoiceForPdf } from "@/services/invoice.service";
+import { getInvoiceByTokenForPdf } from "@/services/invoice.service";
 import { renderToStream } from "@react-pdf/renderer";
 import React from "react";
 import { InvoicePDFTemplate } from "@/features/invoices/templates/InvoicePDFTemplate";
 
 interface RouteProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ token: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: RouteProps) {
   try {
-    const { id } = await params;
-    const company = await getCompanyForUser();
-    const invoice = await getInvoiceForPdf(company._id as string, id);
+    const { token } = await params;
+    
+    const invoice = await getInvoiceByTokenForPdf(token);
 
-    if (!invoice) {
+    // Block access if invoice does not exist or is still in Draft status
+    if (!invoice || invoice.status === "draft") {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    // Render the React-PDF document template into a Node Readable stream
     const stream = await renderToStream(
       React.createElement(InvoicePDFTemplate, { invoice }) as any
     );
@@ -33,10 +32,7 @@ export async function GET(req: NextRequest, { params }: RouteProps) {
       },
     });
   } catch (error: any) {
-    if (error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("GET /api/invoices/[id]/pdf error:", error);
+    console.error("GET /api/public/invoices/[token]/pdf error:", error);
     return NextResponse.json(
       { error: "Internal Server Error during PDF rendering" },
       { status: 500 }

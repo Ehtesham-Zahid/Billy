@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { connectDB } from "@/lib/db";
 import { Invoice, IInvoice } from "@/models/Invoice";
 import { Client } from "@/models/Client";
+import { Company } from "@/models/Company";
+import { InvoiceTemplate } from "@/models/InvoiceTemplate";
 
 // Helper function to format invoice sequential numbers
 function formatInvoiceNumber(seq: number): string {
@@ -26,6 +28,25 @@ export async function getInvoiceById(
 ): Promise<IInvoice | null> {
   await connectDB();
   return Invoice.findOne({ _id: id, companyId });
+}
+
+export async function getInvoiceForPdf(
+  companyId: string,
+  id: string
+): Promise<any | null> {
+  await connectDB();
+  return Invoice.findOne({ _id: id, companyId })
+    .populate("companyId")
+    .populate("templateId");
+}
+
+export async function getInvoiceByTokenForPdf(
+  token: string
+): Promise<any | null> {
+  await connectDB();
+  return Invoice.findOne({ token })
+    .populate("companyId")
+    .populate("templateId");
 }
 
 export async function createInvoice(
