@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Edit2, Trash2, Mail, Briefcase, DollarSign, Loader2, Landmark, History } from "lucide-react";
+import { Plus, Edit2, Trash2, Mail, Briefcase, DollarSign, Loader2, Landmark, History, Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +55,8 @@ interface EmployeeData {
   salary: number;
   bankAccount?: string;
   status: "active" | "inactive";
+  inviteToken?: string;
+  clerkUserId?: string;
   createdAt: string;
 }
 
@@ -192,10 +194,10 @@ export default function EmployeesPage() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       setIsDialogOpen(false);
-      showToast("Employee created successfully!");
+      showToast(`Employee created successfully! Invite email sent to ${data?.email}`);
     },
   });
 
@@ -379,6 +381,27 @@ export default function EmployeesPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
+                        {!emp.clerkUserId ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-muted"
+                            onClick={() => {
+                              const inviteUrl = `${window.location.origin}/invite/${emp.inviteToken}`;
+                              navigator.clipboard.writeText(inviteUrl).then(() => {
+                                showToast("Invite link copied!");
+                              });
+                            }}
+                            title="Copy Invite Link"
+                          >
+                            <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                            <span className="sr-only">Copy Invite Link</span>
+                          </Button>
+                        ) : (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900">
+                            Linked
+                          </span>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -443,7 +466,27 @@ export default function EmployeesPage() {
                       <Mail className="h-3 w-3" /> {emp.email}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
+                    {!emp.clerkUserId ? (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          const inviteUrl = `${window.location.origin}/invite/${emp.inviteToken}`;
+                          navigator.clipboard.writeText(inviteUrl).then(() => {
+                            showToast("Invite link copied!");
+                          });
+                        }}
+                        title="Copy Invite Link"
+                      >
+                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900">
+                        Linked
+                      </span>
+                    )}
                     <Button
                       variant="outline"
                       size="icon"
