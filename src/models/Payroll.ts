@@ -10,6 +10,7 @@ export interface IPayroll extends Document {
   allowances: number;
   deductions: number;
   netSalary: number;
+  departmentSnapshot?: string;
   status: "draft" | "paid";
   createdAt: Date;
   updatedAt: Date;
@@ -26,9 +27,16 @@ const PayrollSchema: Schema = new Schema(
     allowances: { type: Number, required: true, default: 0, min: 0 },
     deductions: { type: Number, required: true, default: 0, min: 0 },
     netSalary: { type: Number, required: true, default: 0, min: 0 },
+    departmentSnapshot: { type: String },
     status: { type: String, enum: ["draft", "paid"], default: "draft", required: true, index: true },
   },
   { timestamps: true }
+);
+
+// Prevent running payroll multiple times for the same employee in the same pay period
+PayrollSchema.index(
+  { companyId: 1, employeeId: 1, payPeriodStart: 1, payPeriodEnd: 1 },
+  { unique: true }
 );
 
 export const Payroll = mongoose.models.Payroll || mongoose.model<IPayroll>("Payroll", PayrollSchema);

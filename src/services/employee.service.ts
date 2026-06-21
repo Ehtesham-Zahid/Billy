@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db";
 import { Employee, IEmployee } from "@/models/Employee";
+import { Payroll } from "@/models/Payroll";
 
 export async function getEmployees(
   companyId: string,
@@ -51,6 +52,12 @@ export async function deleteEmployee(
   id: string
 ): Promise<IEmployee | null> {
   await connectDB();
-  // TODO: Once the Payroll module is created, deleteEmployee() should check for existing Payroll records referencing this employee and block/warn before allowing hard deletion.
+  
+  // Block deletion if employee has payroll history
+  const payrollCount = await Payroll.countDocuments({ employeeId: id });
+  if (payrollCount > 0) {
+    throw new Error("Cannot delete employee with payroll history. Mark them as inactive instead.");
+  }
+  
   return Employee.findOneAndDelete({ _id: id, companyId });
 }

@@ -79,6 +79,9 @@ export async function DELETE(req: Request, { params }: RouteProps) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (error.message.includes("Cannot delete employee")) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error("DELETE /api/employees/[id] error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }

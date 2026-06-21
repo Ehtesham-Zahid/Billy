@@ -97,6 +97,18 @@ export default function EmployeesPage() {
   const [deletingEmployee, setDeletingEmployee] = useState<EmployeeData | null>(null);
 
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<"profile" | "history">("profile");
+
+  const { data: salaryHistory = [], isLoading: isHistoryLoading } = useQuery<any[]>({
+    queryKey: ["employees", editingEmployee?._id, "payroll"],
+    queryFn: async () => {
+      if (!editingEmployee) return [];
+      const res = await fetch(`/api/payroll?employeeId=${editingEmployee._id}`);
+      if (!res.ok) throw new Error("Failed to fetch payroll history");
+      return res.json();
+    },
+    enabled: !!editingEmployee && activeTab === "history",
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -113,6 +125,7 @@ export default function EmployeesPage() {
   });
 
   useEffect(() => {
+    setActiveTab("profile");
     if (editingEmployee) {
       form.reset({
         firstName: editingEmployee.firstName,
@@ -463,9 +476,10 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Add / Edit Employee Modal dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg rounded-lg border border-border bg-card">
+        <DialogContent className={`rounded-lg border border-border bg-card transition-all duration-200 ${
+          activeTab === "history" && editingEmployee ? "max-w-2xl" : "max-w-lg"
+        }`}>
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
               {editingEmployee ? "Edit Employee Records" : "Add New Employee"}
@@ -475,8 +489,36 @@ export default function EmployeesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          {editingEmployee && (
+            <div className="flex border-b border-border mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab("profile")}
+                className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all -mb-px ${
+                  activeTab === "profile"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Profile Details
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("history")}
+                className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all -mb-px ${
+                  activeTab === "history"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Salary History
+              </button>
+            </div>
+          )}
+
+          {(!editingEmployee || activeTab === "profile") ? (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -635,6 +677,75 @@ export default function EmployeesPage() {
               </DialogFooter>
             </form>
           </Form>
+          ) : (
+            <div className="space-y-4 py-2">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Salary Run Logs</h3>
+              {isHistoryLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : salaryHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No payroll records found for this employee yet.
+                </p>
+              ) : (
+                <div className="border border-border rounded-md overflow-hidden bg-muted/20">
+                  <Table>
+                    <TableHeader className="bg-muted/40">
+                      <TableRow>
+                        <TableHead className="font-medium text-xs">Period</TableHead>
+                        <TableHead className="font-medium text-xs text-right">Base</TableHead>
+                        <TableHead className="font-medium text-xs text-right">Allow.</TableHead>
+                        <TableHead className="font-medium text-xs text-right">Deduct.</TableHead>
+                        <TableHead className="font-medium text-xs text-right">Net Salary</TableHead>
+                        <TableHead className="font-medium text-xs text-center">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {salaryHistory.map((run: any) => {
+                        const start = new Date(run.payPeriodStart);
+                        const periodLabel = start.toLocaleDateString(undefined, {
+                          month: "short",
+                          year: "numeric",
+                        });
+                        return (
+                          <TableRow key={run._id} className="text-xs hover:bg-muted/20">
+                            <TableCell className="font-semibold text-foreground">
+                              {periodLabel}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ${run.baseSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-emerald-600">
+                              +${run.allowances.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-rose-600">
+                              -${run.deductions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-semibold text-foreground">
+                              ${run.netSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell className="text-center capitalize">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold text-white ${
+                                run.status === "paid" ? "bg-emerald-600" : "bg-zinc-500"
+                              }`}>
+                                {run.status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <div className="flex justify-end pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
